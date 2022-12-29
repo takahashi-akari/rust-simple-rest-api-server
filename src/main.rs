@@ -26,3 +26,29 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::test;
+    use actix_web::http::StatusCode;
+
+    #[actix_rt::test]
+    async fn test_index() {
+        let mut app = test::init_service(App::new().route("/", web::get().to(index))).await;
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = test::read_body(resp).await;
+        assert_eq!(body, "Hello world!");
+    }
+
+    #[actix_rt::test]
+    async fn test_hello() {
+        let mut app = test::init_service(App::new().route("/hello", web::get().to(hello))).await;
+        let req = test::TestRequest::get().uri("/hello").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = test::read_body(resp).await;
+        assert_eq!(body, "Hello!");
+    }
+}
